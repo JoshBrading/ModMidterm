@@ -3022,6 +3022,26 @@ void Cmd_ShuffleTeams_f( const idCmdArgs& args ) {
 	gameLocal.mpGame.ShuffleTeams();
 }
 
+// Midterm Additions
+void Cmd_randWeapon_f(const idCmdArgs& args) {
+
+	idPlayer* player = player;
+	
+	const char* name = "weapon_shotgun";
+	gameLocal.Printf( "okokok" );
+
+
+	//return;
+
+	if ((idStr::Cmpn(name, "weapon_", 7) == 0)) {
+		player->GiveItem(name);
+		return;
+	}
+
+
+}
+// Midterm End
+
 #ifndef _FINAL
 void Cmd_ClientOverflowReliable_f( const idCmdArgs& args ) {
 	idBitMsg	outMsg;
@@ -3053,6 +3073,12 @@ void idGameLocal::InitConsoleCommands( void ) {
 //	cmdSystem->AddCommand( "writeGameState",		WriteGameState_f,			CMD_FL_GAME,				"write game state" );
 //	cmdSystem->AddCommand( "testSaveGame",			TestSaveGame_f,				CMD_FL_GAME|CMD_FL_CHEAT,	"test a save game for a level" );
 // RAVEN END
+
+// Midterm Additions
+	cmdSystem->AddCommand("randWeapon", Cmd_randWeapon_f, CMD_FL_GAME | CMD_FL_CHEAT, "gives the player a random weapon");
+// Additions End
+
+
 	cmdSystem->AddCommand( "game_memory",			idClass::DisplayInfo_f,		CMD_FL_GAME,				"displays game class info" );
 	cmdSystem->AddCommand( "listClasses",			idClass::ListClasses_f,		CMD_FL_GAME,				"lists game classes" );
 	cmdSystem->AddCommand( "listThreads",			idThread::ListThreads_f,	CMD_FL_GAME|CMD_FL_CHEAT,	"lists script threads" );
