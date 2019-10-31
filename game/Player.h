@@ -14,6 +14,9 @@
 ===============================================================================
 */
 
+extern int playerPoints;
+extern int spawnFriendlyTurret;
+
 extern const idEventDef EV_Player_GetButtons;
 extern const idEventDef EV_Player_GetMove;
 extern const idEventDef EV_Player_GetViewAngles;
@@ -533,9 +536,12 @@ public:
 	idDict *				FindInventoryItem( const char *name );
 
 	// Wrist computer
-	void					GiveObjective				( const char *title, const char *text, const char *screenshot );
+	void					GiveObjective				( const char *title, const char *text, const char *screenshot, bool showObj );
 	void					CompleteObjective			( const char *title );
 	void					FailObjective				( const char *title );
+
+	void					UpdateShop					(					);
+
 	void					GiveDatabaseEntry			( const idDict* dbEntry, bool hudPopup = true );
 	bool					IsObjectiveUp				( void ) const { return objectiveUp; }
 	idUserInterface *		GetObjectiveHud				( void ) { return objectiveSystem; }

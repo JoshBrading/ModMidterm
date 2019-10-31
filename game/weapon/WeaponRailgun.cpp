@@ -186,9 +186,13 @@ stateResult_t rvWeaponRailgun::State_Fire ( const stateParms_t& parms ) {
 	};	
 	switch ( parms.stage ) {
 		case STAGE_INIT:
+
+			fireRate = 1; // jb547 - Increased fire rate to convert weapon to burst fire
 			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
 			Attack ( false, 1, spread, 0, 1.0f );
-			PlayAnim ( ANIMCHANNEL_ALL, "fire", 0 );	
+			//PlayAnim(ANIMCHANNEL_ALL, "fire", 0); // jb547 - removed animation as it would reduce the fire rate
+	
+
 			return SRESULT_STAGE ( STAGE_WAIT );
 	
 		case STAGE_WAIT:		

@@ -310,7 +310,7 @@ stateResult_t rvMonsterSentry::State_Torso_BlasterAttack ( const stateParms_t& p
 	};
 	switch ( parms.stage ) {
 		case STAGE_INIT:
-			shots = (gameLocal.random.RandomInt ( maxShots - minShots ) + minShots) * combat.aggressiveScale;
+			shots = (gameLocal.random.RandomInt(maxShots - minShots) + minShots) * combat.aggressiveScale;
 			return SRESULT_STAGE ( STAGE_ATTACK );
 
 		case STAGE_ATTACK:			
@@ -329,7 +329,6 @@ stateResult_t rvMonsterSentry::State_Torso_BlasterAttack ( const stateParms_t& p
 	}
 	return SRESULT_ERROR;
 }
-
 /*
 ================
 rvMonsterSentry::State_Torso_KamakaziAttack

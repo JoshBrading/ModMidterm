@@ -316,6 +316,8 @@ void rvWeaponLightningGun::Think ( void ) {
 		dir = tr.endpos - origin;
 		dir.Normalize ( );
 		
+		fireRate += 10;
+
 		nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
 		Attack ( currentPath.target, dir, power );
 		for ( i = 0; i < chainLightning.Num(); i ++, power *= 0.75f ) {

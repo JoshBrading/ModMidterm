@@ -3,6 +3,7 @@
 
 #include "../Game_local.h"
 #include "../Weapon.h"
+#include "../Player.h"
 
 const int SHOTGUN_MOD_AMMO = BIT(0);
 
@@ -18,7 +19,8 @@ public:
 	void					Restore				( idRestoreGame *savefile );
 	void					PreSave				( void );
 	void					PostSave			( void );
-
+	int clipSize = 2; // jb547 - sets max clip to 2 rounds, also replaced clipSize() with clipSize
+	//int clipSize = playerPoints;			  // jb547 - Used to test the point system, no longer in use
 protected:
 	int						hitscans;
 
@@ -49,6 +51,7 @@ rvWeaponShotgun::Spawn
 */
 void rvWeaponShotgun::Spawn( void ) {
 	hitscans   = spawnArgs.GetFloat( "hitscans" );
+	
 	
 	SetState( "Raise", 0 );	
 }
@@ -141,7 +144,7 @@ stateResult_t rvWeaponShotgun::State_Idle( const stateParms_t& parms ) {
 					SetState( "Reload", 4 );
 					return SRESULT_DONE;			
 				}
-				if ( wsfl.netReload || (wsfl.reload && AmmoInClip() < ClipSize() && AmmoAvailable()>AmmoInClip()) ) {
+				if ( wsfl.netReload || (wsfl.reload && AmmoInClip() < clipSize && AmmoAvailable()>AmmoInClip()) ) {
 					SetState( "Reload", 4 );
 					return SRESULT_DONE;			
 				}				
@@ -163,11 +166,13 @@ stateResult_t rvWeaponShotgun::State_Fire( const stateParms_t& parms ) {
 	};	
 	switch ( parms.stage ) {
 		case STAGE_INIT:
+			fireRate = 150; // jb547 - Upped the fireRate to be closer to a double barrel
 			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
 			Attack( false, hitscans, spread, 0, 1.0f );
 			PlayAnim( ANIMCHANNEL_ALL, "fire", 0 );	
+
 			return SRESULT_STAGE( STAGE_WAIT );
-	
+
 		case STAGE_WAIT:
 			if ( (!gameLocal.isMultiplayer && (wsfl.lowerWeapon || AnimDone( ANIMCHANNEL_ALL, 0 )) ) || AnimDone( ANIMCHANNEL_ALL, 0 ) ) {
 				SetState( "Idle", 0 );
@@ -178,7 +183,7 @@ stateResult_t rvWeaponShotgun::State_Fire( const stateParms_t& parms ) {
 				return SRESULT_DONE;
 			}
 			if ( clipSize ) {
-				if ( (wsfl.netReload || (wsfl.reload && AmmoInClip() < ClipSize() && AmmoAvailable()>AmmoInClip())) ) {
+				if ( (wsfl.netReload || (wsfl.reload && AmmoInClip() < clipSize && AmmoAvailable()>AmmoInClip())) ) {
 					SetState( "Reload", 4 );
 					return SRESULT_DONE;			
 				}				
@@ -223,7 +228,7 @@ stateResult_t rvWeaponShotgun::State_Reload ( const stateParms_t& parms ) {
 			
 		case STAGE_WAIT:
 			if ( AnimDone ( ANIMCHANNEL_ALL, 4 ) ) {
-				AddToClip ( ClipSize() );
+				AddToClip ( clipSize );
 				SetState ( "Idle", 4 );
 				return SRESULT_DONE;
 			}
@@ -244,7 +249,7 @@ stateResult_t rvWeaponShotgun::State_Reload ( const stateParms_t& parms ) {
 			return SRESULT_WAIT;
 			
 		case STAGE_RELOADLOOP:		
-			if ( (wsfl.attack && AmmoInClip() ) || AmmoAvailable ( ) <= AmmoInClip ( ) || AmmoInClip() == ClipSize() ) {
+			if ( (wsfl.attack && AmmoInClip() ) || AmmoAvailable ( ) <= AmmoInClip ( ) || AmmoInClip() == clipSize ) {
 				return SRESULT_STAGE ( STAGE_RELOADDONE );
 			}
 			PlayAnim ( ANIMCHANNEL_ALL, "reload_loop", 0 );

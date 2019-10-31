@@ -125,7 +125,6 @@ void gameError( const char *fmt, ... );
 #include "FreeView.h"
 
 //============================================================================
-
 const int MAX_GAME_MESSAGE_SIZE		= 8192;
 const int MAX_ENTITY_STATE_SIZE		= 512;
 const int ENTITY_PVS_SIZE			= ((MAX_GENTITIES+31)>>5);
@@ -470,6 +469,7 @@ public:
 	virtual bool			InitFromSaveGame( const char *mapName, idRenderWorld *renderWorld, idFile *saveGameFile );
 // RAVEN BEGIN
 // mekberg: added saveTypes
+	virtual void			SpawnEnemies( int num_enemies, idVec3 org, idStr enemy_type);
 	virtual void			SaveGame( idFile *saveGameFile, saveType_t saveType = ST_REGULAR );
 // RAVEN END
 	virtual void			MapShutdown( void );

@@ -231,8 +231,25 @@ stateResult_t rvWeaponMachinegun::State_Fire ( const stateParms_t& parms ) {
 				Attack ( true, 1, spreadZoom, 0, 1.0f );
 				fireHeld = true;
 			} else {
+				int num_attacks = 1.0f;
+				int chance =  rand() % 80;
+				if (chance == 0){
+					num_attacks = 99; // jb547 - Machine gun has a chance to fire an insta kill round
+					spread = 0;
+					if (ammoClip >= 10){ // jb547 - Insta kill round uses 10 bullets or all remaining ammo in clip
+						UseAmmo(9); // jb547 - Removes 9 bullets from the clip, the other 1 get removed from the attact func
+					}
+					else{
+						UseAmmo(ammoClip + 1);
+					}
+				}
+				else{
+					num_attacks = 1;
+					spread = 1.0f;
+				}
+				
 				nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
-				Attack ( false, 1, spread, 0, 1.0f );
+				Attack ( false, num_attacks, spread, 0, 1.0f );
 			}
 			PlayAnim ( ANIMCHANNEL_ALL, "fire", 0 );	
 			return SRESULT_STAGE ( STAGE_WAIT );

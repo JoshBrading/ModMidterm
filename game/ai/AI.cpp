@@ -5,7 +5,6 @@ AI.cpp
 
 ================
 */
-
 #include "../../idlib/precompiled.h"
 #pragma hdrstop
 
@@ -17,6 +16,7 @@ AI.cpp
 #include "../Projectile.h"
 #include "../spawner.h"
 #include "AI_Tactical.h"
+#include "../Player.h"
 
 const char* aiTalkMessageString [ ] = {
 	"None",
@@ -599,7 +599,9 @@ void idAI::InitNonPersistentSpawnArgs ( void ) {
 idAI::Spawn
 =====================
 */
-void idAI::Spawn( void ) {
+
+
+void idAI::Spawn(void) {
 	const char*			jointname;
 	const idKeyValue*	kv;
 	idStr				jointName;
@@ -617,7 +619,27 @@ void idAI::Spawn( void ) {
 	InitNonPersistentSpawnArgs ( );	
 
 	spawnArgs.GetInt(	"team",					"1",		team );
-	spawnArgs.GetInt(	"rank",					"0",		rank );
+	spawnArgs.GetInt(	"rank",					"0",		rank);
+
+	// jb547 START
+	const char* ptrType		= spawnArgs.GetString("classname");
+	idStr type				= idStr(ptrType);
+	idStr sentry			= "monster_sentry";
+	idStr convoy_ground		= "monster_convoy_ground";
+	idStr turret_flying		= "monster_turret_flying";
+	idStr strogg_hover		= "monster_strogg_hover";
+	idStr turret_small		= "monster_turret";
+
+	if (spawnFriendlyTurret){ // if this is true it means the player bought the turret
+		if ( type == sentry || type == convoy_ground || type == turret_flying || type == strogg_hover || type == turret_small ){ // jb547 - if turret spawns, switch its team to friendly
+			team = 0;
+			health = 10000;
+		}
+	}
+	if (team == 1){
+		health = health / 2; // jb547 - Decrease all enemy health 2x
+	}
+	// jb547 END
 
 	animPrefix = spawnArgs.GetString ( "animPrefix", "" );
 
@@ -1544,13 +1566,13 @@ bool idAI::Pain( idEntity *inflictor, idEntity *attacker, int damage, const idVe
 	// jshepard: friendly fire will cause pain. Players will only be able to pain buddy marines
 	// via splash damage.
 
-/*
+	/*
 	if ( attacker && attacker->IsType ( idActor::GetClassType ( ) ) ) {
 		if ( static_cast<idActor*>( attacker )->team == team ) {
 			return aifl.pain;
 		}
 	}
-*/
+	*/
 
 	// ignore damage from self
 	if ( attacker != this ) {
@@ -1613,11 +1635,42 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 	idAngles			ang;
 	const char*			modelDeath;
 	const idKeyValue*	kv;
-	
-	if ( g_debugDamage.GetBool() ) {
-		gameLocal.Printf( "Damage: joint: '%s', zone '%s'\n", animator.GetJointName( ( jointHandle_t )location ), 
-			GetDamageGroup( location ) );
-	}
+
+	// jb547 - START
+		idStr oldTitle;
+		sprintf(oldTitle, "You have $%i", playerPoints);
+		playerPoints += 250;
+		idPlayer* player = gameLocal.GetLocalPlayer();
+		player->UpdateShop();
+		gameLocal.Printf("Points: %i", playerPoints);
+/*
+	//Create obj
+		idPlayer* player = gameLocal.GetLocalPlayer();
+		idStr objTitle;
+		sprintf(objTitle, "You have $%i", playerPoints);
+
+		idStr controls = "\n\n $1,000 | F1 - Random Weapon \n $3,000 | F2 - Random Turret \n $1,000 | F3 - Max Health \n $10,000 | F5 - All Weapons";
+
+		player->GiveObjective(objTitle, controls, NULL, false);
+
+	//Rmove old obj
+		oldTitle = common->GetLocalizedString(oldTitle);
+		// RAVEN END
+		int c = player->inventory.objectiveNames.Num();
+		for (int i = 0; i < c; i++) {
+			if (idStr::Icmp(player->inventory.objectiveNames[i].title, oldTitle) == 0) {
+				player->inventory.objectiveNames.RemoveIndex(i);
+				break;
+			}
+		}
+*/	
+
+	// jb547 - END
+
+	//if ( g_debugDamage.GetBool() ) {
+		//gameLocal.Printf( "Damage: joint: '%s', zone '%s'\n", animator.GetJointName( ( jointHandle_t )location ), 
+		//	GetDamageGroup( location ) );
+	//}
 
 	if ( aifl.dead ) {
 		aifl.pain = true;

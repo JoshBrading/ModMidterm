@@ -3,6 +3,7 @@
 
 #include "Game_local.h"
 
+
 // RAVEN BEGIN
 // bdube: client effects
 #include "client/ClientEffect.h"
@@ -126,7 +127,7 @@ const idEventDef EV_SetHealth( "setHealth", "f" );
 ABSTRACT_DECLARATION( idClass, idEntity )
 	EVENT( EV_GetName,				idEntity::Event_GetName )
 	EVENT( EV_SetName,				idEntity::Event_SetName )
-	EVENT( EV_FindTargets,			idEntity::Event_FindTargets )
+	EVENT( EV_FindTargets,			idEntity::Event_FindTargets ) // jb547 - might be useful later for switching sentry team
 	EVENT( EV_ActivateTargets,		idEntity::Event_ActivateTargets )
 	EVENT( EV_NumTargets,			idEntity::Event_NumTargets )
 	EVENT( EV_GetTarget,			idEntity::Event_GetTarget )
@@ -542,6 +543,8 @@ void idEntity::Spawn( void ) {
 	const char			*classname;
 	const char			*scriptObjectName;
 
+
+
 	gameLocal.RegisterEntity( this );
 
 // bdube: make sure there is a classname before trying to use it
@@ -642,6 +645,9 @@ void idEntity::Spawn( void ) {
 	}
 
 	health = spawnArgs.GetInt( "health" );
+	//gameLocal.Printf("\n--------------WHAT IS THIS --------------\n");
+	//gameLocal.Printf(temp); // jb547 - what does temp equal?
+	//gameLocal.Printf("\n--------------WHAT IS THIS --------------\n");
 
 	InitDefaultPhysics( origin, axis );
 

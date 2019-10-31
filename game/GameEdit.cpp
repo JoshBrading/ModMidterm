@@ -1429,6 +1429,8 @@ bool idGameEdit::MapHasExportEntities( void ) const {
 // cdr: changed to also return the full string name of the map file (still compatable as a bool test)
 const char* idGameEdit::MapLoaded( void ) const {
 
+	gameLocal.Printf( "MAP LOADED: ", gameLocal.GetMapName()); // jb547 - Prints current map on load?
+
 	const char *psMapName = gameLocal.GetMapName();
 	if (psMapName && psMapName[0]) {
 		return psMapName;

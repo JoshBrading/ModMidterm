@@ -17,6 +17,7 @@
 #include "ai/AAS_tactical.h"
 #include "Healing_Station.h"
 #include "ai/AI_Medic.h"
+#include "Player.h"
 
 // RAVEN BEGIN
 // nrausch: support for turning the weapon change ui on and off
@@ -28,7 +29,8 @@
 #endif
 // RAVEN END
 
-
+int playerPoints = 0;
+int spawnFriendlyTurret = 0;
 
 
 idCVar net_predictionErrorDecay( "net_predictionErrorDecay", "112", CVAR_FLOAT | CVAR_GAME | CVAR_NOCHEAT, "time in milliseconds it takes to fade away prediction errors", 0.0f, 200.0f );
@@ -469,6 +471,8 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( secretAreasDiscovered );
 
 	savefile->WriteSyncId();
+
+	gameLocal.Printf("\nGAME AUTOSAVED, LOAD ENEMIES HERE, MAP:", gameLocal.GetMapName(), "DID SOMETHING SHOW HERE\n"); // jb547 testing for map loading
 }
 
 /*
@@ -5197,7 +5201,7 @@ void idPlayer::UpdateObjectiveInfo( void ) {
 idPlayer::GiveObjective
 ===============
 */
-void idPlayer::GiveObjective( const char *title, const char *text, const char *screenshot ) {
+void idPlayer::GiveObjective( const char *title, const char *text, const char *screenshot, bool showObj ) { // jb547 - added bool to GiveObjective
 	idObjectiveInfo info;
 // RAVEN BEGIN
 	info.title = common->GetLocalizedString( title );
@@ -5205,7 +5209,7 @@ void idPlayer::GiveObjective( const char *title, const char *text, const char *s
 // RAVEN END
 	info.screenshot = screenshot;
 	inventory.objectiveNames.Append( info );
-	if ( showNewObjectives ) {
+	if ( showObj ) {
 		ShowObjective( "newObjective" );
 	}
 	if ( objectiveSystem ) {
@@ -5282,6 +5286,32 @@ void idPlayer::FailObjective ( const char* title ) {
 	maxRespawnTime = minRespawnTime + MAX_RESPAWN_TIME;
 #endif
 }
+
+
+// jb547 - Handles shop obj
+void idPlayer::UpdateShop(){
+
+	idPlayer* player = gameLocal.GetLocalPlayer();
+	idStr objTitle = "Store"
+		;
+	//Rmove old obj
+	idStr oldTitle = common->GetLocalizedString(objTitle);
+	int c = player->inventory.objectiveNames.Num();
+	for (int i = 0; i < c; i++) {
+		if (idStr::Icmp(player->inventory.objectiveNames[i].title, oldTitle) == 0) {
+			player->inventory.objectiveNames.RemoveIndex(i);
+			break;
+		}
+	}
+	
+	//Create obj
+	idStr controls;
+	sprintf(controls, "You have $%i\n\n $1,000 | F1 - Random Weapon \n $3,000 | F2 - Random Turret \n $1,000 | F3 - Max Health \n $10,000 | F5 - Max Ammo", playerPoints);
+	player->GiveObjective(objTitle, controls, NULL, false);
+
+
+}
+
 
 /*
 ===============
@@ -9284,6 +9314,8 @@ Called every tic for each player
 */
 void idPlayer::Think( void ) {
 	renderEntity_t *headRenderEnt;
+
+	//gameLocal.Printf("\nI have %i points.\n", playerPoints);
  
 	if ( talkingNPC ) {
 		if ( !talkingNPC.IsValid() ) {

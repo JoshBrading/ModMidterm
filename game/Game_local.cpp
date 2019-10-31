@@ -976,7 +976,84 @@ void idGameLocal::SaveGame( idFile *f, saveType_t saveType ) {
 		GetLocalPlayer()->weapon->PostSave();
 	}
 // RAVEN END
+// jb547 START
+	gameLocal.Printf("----------------------------------------------------------------------------------");
+	gameLocal.Printf("Map loaded, spawn enemies here.\n"); // jb547 - Checking what map is loaded for spawning extra enemies
+	gameLocal.Printf(mapFileNameStripped);
+	gameLocal.Printf("----------------------------------------------------------------------------------");
+
+	idPlayer *player = GetLocalPlayer();
+	player->UpdateShop();
+
+#ifndef _MPBETA
+
+	idStr		map1, map2, map3, map4, map5;
+
+	map1 = "airdefence1";
+	map2 = "mv2";
+	gameLocal.Printf("\n");
+	gameLocal.Printf(mapFileNameStripped);
+	gameLocal.Printf("\n");
+	gameLocal.Printf(map1);
+	gameLocal.Printf("\n");
+	//if (mapFileNameStripped == map1){
+		idVec3 org1, org2, org3, org4, org5, org6, org7, org8, org9, org10;
+		gameLocal.Printf("AirDefence Enemies Spawning");
+		org1 = idVec3(9240.42, -5405.12, 68.25);
+		org2 = idVec3(8969.3, -3788.25, 36.25);
+		org3 = idVec3(9948.09, -3271.2, 100.25);
+		org4 = idVec3(9370.3, -6299.01, 69.94);
+		org5 = idVec3(9300.77, -6976.82, 69.25);
+		org6 = idVec3(10561.93, -2733.49, 68.25);
+		org7 = idVec3(9940.25, -1971.5, 52.25);
+		org8 = idVec3(9071.64, -4871.15, 68.25);
+		org9 = idVec3(10489.71, -2825.9, 47.43);
+		org10 = idVec3(10490.38, -2832.67, 68.25);
+
+		SpawnEnemies(2, org5, "monster_berserker");
+		SpawnEnemies( 2, org4, "monster_berserker");
+		SpawnEnemies( 3, org1, "monster_berserker");
+		SpawnEnemies(5, org2, "monster_berserker");
+		SpawnEnemies(5, org3, "monster_berserker");
+		SpawnEnemies(5, org6, "monster_berserker");
+		SpawnEnemies(5, org7, "monster_berserker");
+		SpawnEnemies(3, org8, "monster_berserker");
+		SpawnEnemies(3, org9, "monster_berserker");
+		SpawnEnemies(3, org10, "monster_berserker");
+
+	//}
+	//else if (mapFileNameStripped == map2){
+
+		//idVec3 org1, org2, org3;
+
+		//org1 = idVec3(-121.4, 466.27, 68.25);
+		//org2 = idVec3(-121.4, 466.27, 68.25);
+		//org3 = idVec3(-121.4, 466.27, 68.25);
+
+		//SpawnEnemies(10, org1, "monster_berserker");
+	//}
+		
+#endif
 }
+ 
+// jb547 - This function is used to spawn enemies at the start of a map... eventually...
+void idGameLocal::SpawnEnemies( int num_enemies, idVec3 org, idStr enemy_type ){
+
+	for (int i = 0; i < num_enemies; i++){
+		idPlayer *player;
+		idDict dict;
+
+		org = org + idVec3(rand() % 60, rand() % 60, 0);
+
+		dict.Set("origin", org.ToString());
+		dict.Set("classname", enemy_type);
+
+		idEntity *newEnt = NULL;
+		gameLocal.SpawnEntityDef(dict, &newEnt);
+		//gameLocal.Printf("spawned entity '%s'\n", newEnt->name.c_str());
+	}
+}
+//jb547 END
 
 /*
 ===========
@@ -1487,6 +1564,12 @@ void idGameLocal::LoadMap( const char *mapName, int randseed ) {
 // ddynerman: ambient light list
 	ambientLights.Clear();
 // RAVEN END
+
+	gameLocal.Printf(mapFileNameStripped);
+	gameLocal.Printf(mapFileNameStripped);
+	gameLocal.Printf(mapFileNameStripped);
+	gameLocal.Printf(mapFileNameStripped);
+
 }
 
 /*
@@ -7603,7 +7686,7 @@ idEntity* idGameLocal::HitScan(
 				if ( range > 4096.0f )
 				{
 					assert( !(range > 4096.0f) );
-					Warning( "idGameLocal::HitScan: hitscan def (%s) with trace_size must have max range of 4096!", hitscanDict.GetString( "classname" ) );
+					Warning( "idGameLocal::hitscan def (%s) with trace_size must have max range of 4096!", hitscanDict.GetString( "classname" ) );
 					range = idMath::ClampFloat( 0.0f, 4096.0f, range );
 				}
 				end	= start + (dir * range);
@@ -7654,6 +7737,8 @@ idEntity* idGameLocal::HitScan(
 			ent			   = entities[ tr.c.entityNum ];
 			actualHitEnt   = NULL;
 			start		   = collisionPoint;
+
+			Printf(collisionPoint.ToString());// jb547 - checking collision point for testing weapon hits
 
 			// Keep tracing if we hit water
 			if ( (ent->GetPhysics()->GetContents() & CONTENTS_WATER) || (tr.c.material && (tr.c.material->GetContentFlags() & CONTENTS_WATER)) ) {
@@ -7757,6 +7842,18 @@ idEntity* idGameLocal::HitScan(
 					}
 				}
 			}
+			
+			int chance = rand() % 15;
+			if (chance == 1){
+				//gameLocal.Printf("Hitscan: %s \n", collisionPoint.ToString());
+				idVec3 hit_Point = collisionPoint + idVec3(0, 0, 10);
+				idStr hp_String = hit_Point.ToString();
+				idDict dict;
+				dict.Set("origin", collisionPoint.ToString());
+				dict.Set("classname", "moveable_explodingbarrel");
+				idEntity *newEnt = NULL;
+				gameLocal.SpawnEntityDef(dict, &newEnt);
+			}
 
 
 			// Pass through actors
@@ -7779,6 +7876,7 @@ idEntity* idGameLocal::HitScan(
 		} else {
 			tracer = false;
 		}
+
 
 		if ( !reflect ) {
 			//on initial trace only
@@ -7824,8 +7922,8 @@ idEntity* idGameLocal::HitScan(
 
 		// Increase damage scale on reflect		
 		damageScale += hitscanDict.GetFloat( "reflect_powerup", "0" );
-	}	
-	
+	}
+
 	assert( false );
 	
 	return NULL;

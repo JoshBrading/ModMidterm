@@ -8,4 +8,6 @@ void KillEntities( const idCmdArgs &args, const idTypeInfo &superClass );
 
 void GiveStuffToPlayer( idPlayer* player, const char* name, const char* value );
 
+//extern int spawnFriendlyTurret;
+
 #endif /* !__SYS_CMDS_H__ */

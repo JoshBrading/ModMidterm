@@ -657,6 +657,7 @@ stateResult_t rvWeaponNailgun::State_Fire( const stateParms_t& parms ) {
 			return SRESULT_STAGE ( STAGE_FIRE );
 			
 		case STAGE_FIRE:
+		
 			if ( !wsfl.attack || wsfl.reload || wsfl.lowerWeapon || AmmoInClip ( ) <= 0 ) {
 				return SRESULT_STAGE ( STAGE_DONE );
 			}
@@ -665,15 +666,16 @@ stateResult_t rvWeaponNailgun::State_Fire( const stateParms_t& parms ) {
 			} else {
 				PlayCycle ( ANIMCHANNEL_LEGS, "fire_slow", 4 );
 			}
-
+			//-------------------------------------------------------------------------------------------------- jb547 - work in prog for burst nail gun 
 			if ( wsfl.zoom ) {				
 				Attack ( true, 1, spread, 0.0f, 1.0f );
 				nextAttackTime = gameLocal.time + (altFireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
 			} else {
-				Attack ( false, 1, spread, 0.0f, 1.0f );
-				nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));
+				fireRate = 1000;
+				Attack(false, 8, spread, 0.0f, 1.0f);
+				nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier(PMOD_FIRERATE));
 			}
-			
+			//---------------------------------------------------------------------------------------------------------
 			// Play the exhaust effects
 			viewModel->PlayEffect ( "fx_exhaust", jointSteamRightView, false );
 			viewModel->PlayEffect ( "fx_exhaust", jointSteamLeftView, false );

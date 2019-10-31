@@ -31,6 +31,114 @@
 #include "NoGameTypeInfo.h"
 #endif
 
+#include "../Player.h"
+
+/*
+
+JB547 - START
+
+==================
+Cmd_BuyRandomWeapon_f
+==================
+*/
+void Cmd_BuyRandomWeapon_f( const idCmdArgs &args ){
+	idPlayer *player;
+	player = gameLocal.GetLocalPlayer();
+	const char* weaponArray[10] = { "weapon_DarkMatterGun", "weapon_GrenadeLauncher", "weapon_HyperBlaster",
+		"weapon_LighteningGun", "weapon_Machinegun", "weapon_Nailgun", "weapon_NapalmGun",
+		"weapon_Railgun", "weapon_RocketLauncher", "weapon_Shotgun" };
+
+
+	int weaponNum = gameLocal.random.RandomInt(10); // jb547 - Picks a random weapon from the array
+	const char* weapon = weaponArray[weaponNum];
+
+	if (playerPoints >= 1000){
+		idPlayer *player = gameLocal.GetLocalPlayer();
+
+		playerPoints -= 1000;
+		GiveStuffToPlayer(player, weapon, args.Argv(2));
+
+		player->UpdateShop();
+	}
+}
+/*
+===================
+Cmd_BuyRandomTurret_f
+===================
+*/
+void Cmd_BuyRandomTurret_f(const idCmdArgs &args){
+	idPlayer *player = gameLocal.GetLocalPlayer();
+	float yaw;
+	const char* turretArray[20] = { "monster_sentry", "monster_turret_flying", "monster_convoy_ground", "monster_strogg_hover", "monster_turret" };
+	idVec3 org = player->GetPhysics()->GetOrigin() + idAngles(0, yaw, 0).ToForward() * 80 + idVec3(0, 0, 1);
+
+	idStr cmd = args.Args(1);
+	if (idStr::Icmp(cmd, "help") == 0){
+		gameLocal.Printf("\nTurret Spawning may result in a lag spike on initial spawns.\nIndividual turrents can be spawned with 'RandomTurret' followed by the name.\nSpawnable turrets include\n  ->  'monster_sentry'\n  ->  'monster_turret_flying'\n  ->  'monster_convoy_ground'\n  ->  'monster_strogg_hover'\n  ->  'monster_turret'");
+	}
+	else if (!idStr::Cmpn(cmd, "monster_", 8)){
+		gameLocal.Printf(cmd);
+		spawnFriendlyTurret = 1;
+		gameLocal.SpawnEnemies(1, org, cmd);
+		spawnFriendlyTurret = 0;
+
+
+	}else{
+		int sentryNum = gameLocal.random.RandomInt(5); // jb547 - Picks a random turret from the array
+		const char* turret = turretArray[sentryNum];
+
+		if (playerPoints >= 3000){
+			spawnFriendlyTurret = 1;
+			gameLocal.SpawnEnemies(1, org, turret);
+			spawnFriendlyTurret = 0;
+			playerPoints -= 3000;
+			player->UpdateShop();
+		}
+	}
+}
+/*
+===================
+Cmd_BuyHealth_f
+===================
+*/
+void Cmd_BuyHealth_f(const idCmdArgs &args){
+	idPlayer *player = gameLocal.GetLocalPlayer();
+	if (playerPoints >= 1000){
+		player->health = player->inventory.maxHealth;
+		playerPoints -= 1000;
+		player->UpdateShop();
+	}
+}
+/*
+===================
+Cmd_BuyAmmo_f
+===================
+*/
+void Cmd_BuyAmmo_f(const idCmdArgs &args){
+	idPlayer *player = gameLocal.GetLocalPlayer();
+	if (playerPoints >= 10000){
+		for (int i = 0; i < MAX_AMMOTYPES; i++) {
+			player->inventory.ammo[i] = player->inventory.MaxAmmoForAmmoClass(player, rvWeapon::GetAmmoNameForIndex(i));
+		}
+		playerPoints -= 10000;
+		player->UpdateShop();
+	}
+}
+
+/*
+===================
+Cmd_GiveMoney_f
+===================
+*/
+void Cmd_GiveMoney_f( const idCmdArgs &args){
+	idPlayer *player = gameLocal.GetLocalPlayer();
+
+	playerPoints += 999999;
+	player->UpdateShop();
+}
+
+// jb547 - END
+
 /*
 ==================
 Cmd_GetFloatArg
@@ -551,7 +659,7 @@ void Cmd_Give_f( const idCmdArgs &args ) {
 		return;
 	}
 
-	GiveStuffToPlayer( player, args.Argv(1), args.Argv(2) );
+	GiveStuffToPlayer(player, args.Args(1), args.Argv(2));
 }
 // RITUAL END
 
@@ -1132,16 +1240,19 @@ void Cmd_Spawn_f( const idCmdArgs &args ) {
 	yaw = player->viewAngles.yaw;
 
 	value = args.Argv( 1 );
+	//value = "char_marine"; // force marine to spawn
 	dict.Set( "classname", value );
 	dict.Set( "angle", va( "%f", yaw + 180 ) );
 
 	org = player->GetPhysics()->GetOrigin() + idAngles( 0, yaw, 0 ).ToForward() * 80 + idVec3( 0, 0, 1 );
+	//org = idVec3(-576, 576, 68.25); // jb547 - custom coords, used for testing spawn locations
 	dict.Set( "origin", org.ToString() );
 
 	for( i = 2; i < args.Argc() - 1; i += 2 ) {
-
 		key = args.Argv( i );
 		value = args.Argv( i + 1 );
+
+		gameLocal.Printf( key, ":", value ); // jb547 - Checking what this does so I can use it later...
 
 		dict.Set( key, value );
 	}
@@ -3022,26 +3133,6 @@ void Cmd_ShuffleTeams_f( const idCmdArgs& args ) {
 	gameLocal.mpGame.ShuffleTeams();
 }
 
-// Midterm Additions
-void Cmd_randWeapon_f(const idCmdArgs& args) {
-
-	idPlayer* player = player;
-	
-	const char* name = "weapon_shotgun";
-	gameLocal.Printf( "okokok" );
-
-
-	//return;
-
-	if ((idStr::Cmpn(name, "weapon_", 7) == 0)) {
-		player->GiveItem(name);
-		return;
-	}
-
-
-}
-// Midterm End
-
 #ifndef _FINAL
 void Cmd_ClientOverflowReliable_f( const idCmdArgs& args ) {
 	idBitMsg	outMsg;
@@ -3074,9 +3165,12 @@ void idGameLocal::InitConsoleCommands( void ) {
 //	cmdSystem->AddCommand( "testSaveGame",			TestSaveGame_f,				CMD_FL_GAME|CMD_FL_CHEAT,	"test a save game for a level" );
 // RAVEN END
 
-// Midterm Additions
-	cmdSystem->AddCommand("randWeapon", Cmd_randWeapon_f, CMD_FL_GAME | CMD_FL_CHEAT, "gives the player a random weapon");
-// Additions End
+
+	cmdSystem->AddCommand( "RandomWeapon",			Cmd_BuyRandomWeapon_f,		CMD_FL_GAME,				"Gives a random weapon to the player and removes $1,000" );
+	cmdSystem->AddCommand( "GiveMoney",				Cmd_GiveMoney_f,			CMD_FL_GAME,				"Gives money to the player" );
+	cmdSystem->AddCommand( "RandomTurret",			Cmd_BuyRandomTurret_f,		CMD_FL_GAME,				"Gives a random turret to the player and removes $3,000" );
+	cmdSystem->AddCommand( "BuyHealth",				Cmd_BuyHealth_f,			CMD_FL_GAME,				"Gives player max health and removes $1,000" );
+	cmdSystem->AddCommand( "BuyAmmo",				Cmd_BuyAmmo_f,				CMD_FL_GAME,				"Gives player max ammo and removes $10,000" );
 
 
 	cmdSystem->AddCommand( "game_memory",			idClass::DisplayInfo_f,		CMD_FL_GAME,				"displays game class info" );

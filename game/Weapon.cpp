@@ -20,7 +20,8 @@
   rvViewWeapon  
 	
 ***********************************************************************/
-
+bool first_attack = true;
+int count_shots = 0;
 // class def
 CLASS_DECLARATION( idAnimatedEntity, rvViewWeapon )
 	EVENT( EV_CallFunction,		rvViewWeapon::Event_CallFunction )

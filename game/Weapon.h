@@ -27,6 +27,10 @@ typedef enum {
 static const int MAX_WEAPONMODS	= 4;
 static const int MAX_AMMOTYPES	= 16;
 
+extern bool first_attack; // jb547 - Used to check if a weapon has been shot
+extern int count_shots; // jb547 - Used to count the number of times a weapon was shot for use with burst weapons
+
+
 class idPlayer;
 class idItem;
 class idAnimatedEntity;
