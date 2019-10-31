@@ -48,6 +48,9 @@ GiveMoney						| Adds $999,999 to the players bank
 - Increase number of enemies
 
 ## Testing Features
+Shop menu will not work without the proper binds set in Quake4Config.cfg, the binds can be found in the file above.  
+Weapon modifications will also not work without using the provided pak999.pk4.
+
 - Increased enemy spawns can be tested by loading the first map, "airdefence1.map"
 - Weapon mods can be tested with the "give all" command
 - Auto turrets can be tested with the "RandomTurret <name>" command
